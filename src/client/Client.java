@@ -39,9 +39,16 @@ public class Client extends Thread implements TcpCallback, UdpCallback {
             String[] commandArgs = command.split("\\s+");
             // TODO: Probably it moves to GUI
             switch (commandArgs[0]) {
+                case "login":
+                    if (commandArgs.length != 3) {
+                        System.out.println("Wrong login command : login login password");
+                        continue;
+                    }
+                    api.login(commandArgs[1], commandArgs[2]);
+                    break;
                 case "messageSend":
                     if (commandArgs.length != 2) {
-                        System.out.println("Unkown command");
+                        System.out.println("Wrong messageSend command : messageSend text");
                         continue;
                     }
                     String text = commandArgs[1];
@@ -69,7 +76,7 @@ public class Client extends Thread implements TcpCallback, UdpCallback {
 
     public void startUdpListener(String publicRoomAddress) {
         try {
-            udpHandler = new UdpHandler(publicRoomAddress, Server.BROADCAST_PORT, this);
+            udpHandler = new UdpHandler(publicRoomAddress, Constants.BROADCAST_PORT, this);
             System.out.println("start udp listener");
         } catch (IOException e) {
             e.printStackTrace();

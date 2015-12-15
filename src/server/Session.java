@@ -73,7 +73,9 @@ public class Session extends Thread {
                         callback.onRequest(sessionId, request);
                     }
                 } catch (IOException e) {
-                    System.out.println("reader: close session");
+                    if (LOG_ITERATION) {
+                        System.out.println("reader: close session");
+                    }
                     close();
                 }
 

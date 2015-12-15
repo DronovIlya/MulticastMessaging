@@ -42,18 +42,20 @@ public class Server extends Thread implements ServerCallback {
 
     @Override
     public void onSessionClosed(int sessionId) {
-        rejectSession(sessionId);
+        rejectSession(sessionId, false);
     }
 
     private Session getSession(int sessionId) {
         return availableSessions.containsKey(sessionId) ? availableSessions.get(sessionId) : null;
     }
 
-    public void rejectSession(int sessionId) {
+    public void rejectSession(int sessionId, boolean close) {
         System.out.println("reject session with id = " + sessionId);
         Session session = getSession(sessionId);
-        if (session != null) {
-            session.close();
+        if (close) {
+            if (session != null) {
+                session.close();
+            }
         }
         availableSessions.remove(sessionId);
     }

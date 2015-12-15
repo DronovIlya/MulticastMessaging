@@ -35,7 +35,7 @@ public class ServerManager {
             // TODO: don't break session, send error back
             if (!(request instanceof LoginCmd.Request)) {
                 System.out.println("first request must be LOGIN request");
-                server.rejectSession(sessionId);
+                server.rejectSession(sessionId, true);
                 return;
             }
         }
@@ -48,7 +48,7 @@ public class ServerManager {
             LoginCmd.Request request = (LoginCmd.Request) req;
 
             if (Texts.isEmpty(request.login) || Texts.isEmpty(request.password)) {
-                server.rejectSession(sessionId);
+                server.rejectSession(sessionId, true);
                 return;
             }
 
@@ -56,7 +56,7 @@ public class ServerManager {
             if (users.containsKey(request.login)) {
                 if (!loginToPasswords.get(request.login).equals(request.password)) {
                     System.out.println("wrong password");
-                    server.rejectSession(sessionId);
+                    server.rejectSession(sessionId, true);
                     return;
                 }
                 user = users.get(request.login);
