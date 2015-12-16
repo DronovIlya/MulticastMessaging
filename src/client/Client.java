@@ -62,12 +62,19 @@ public class Client extends Thread implements TcpCallback, UdpCallback {
                 String text = args[2];
                 api.messageSend(chatId, text);
                 break;
-
+            case "joinChat":
+                if (args.length != 2) {
+                    System.out.println("Wring joinChat command : joinChat \"chatId\"");
+                    return;
+                }
+                chatId = Long.parseLong(args[1]);
+                api.joinChat(chatId);
+                break;
         }
     }
 
-    private void breakClient() {
-        System.out.println("break client");
+    private void killClient() {
+        System.out.println("Client: break client");
         tcpHandler.close();
         udpHandler.close();
         connectionState = ConnectionState.DISCONNECTED;
@@ -89,7 +96,18 @@ public class Client extends Thread implements TcpCallback, UdpCallback {
         } catch (IOException e) {
             e.printStackTrace();
             // Something goes wrong, break client
-            breakClient();
+            killClient();
+        }
+    }
+
+    public void joinChat(String address) {
+        try {
+            udpHandler.joinChat(address);
+        } catch (IOException e) {
+            System.out.println("Client: joinChat: error in joining chat = " + address);
+            e.printStackTrace();
+            // Something goes wrong, break client
+            killClient();
         }
     }
 
@@ -100,6 +118,7 @@ public class Client extends Thread implements TcpCallback, UdpCallback {
 
     @Override
     public void onTcpClosed() {
+        System.out.println("Client: onTcpClosed");
         connectionState = ConnectionState.DISCONNECTED;
     }
 
@@ -126,7 +145,6 @@ public class Client extends Thread implements TcpCallback, UdpCallback {
             }
         }
     }
-
 
     private class ConnectionHandler implements Runnable {
 

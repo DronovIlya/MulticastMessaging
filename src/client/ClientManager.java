@@ -1,5 +1,6 @@
 package client;
 
+import commands.JoinChatCmd;
 import commands.LoginCmd;
 import commands.MessageSendCmd;
 import commands.base.BaseResponse;
@@ -25,7 +26,9 @@ public class ClientManager {
         if (response instanceof LoginCmd.Response) {
             onLogin((LoginCmd.Response) response);
         } else if (response instanceof MessageSendCmd.Response) {
-            onMessage(((MessageSendCmd.Response) response).message);
+            onMessage(((MessageSendCmd.Response) response));
+        } else if (response instanceof JoinChatCmd.Response) {
+            onJoinChat((JoinChatCmd.Response) response);
         }
     }
 
@@ -39,7 +42,13 @@ public class ClientManager {
         client.startUdpListener(subscribedChats);
     }
 
-    private void onMessage(Message message) {
-        System.out.println("onMessage: " + message);
+    private void onMessage(MessageSendCmd.Response response) {
+        System.out.println("onMessage: " + response.message);
+    }
+
+    private void onJoinChat(JoinChatCmd.Response response) {
+        System.out.println("onJoinChat: start listening chat = " + response.chat);
+        subscribedChats.add(response.chat);
+        client.joinChat(response.chat.address);
     }
 }

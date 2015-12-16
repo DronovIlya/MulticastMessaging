@@ -1,5 +1,6 @@
 package server;
 
+import commands.JoinChatCmd;
 import commands.LoginCmd;
 import commands.MessageSendCmd;
 import commands.base.BaseResponse;
@@ -19,6 +20,10 @@ public class ServerApi {
 
     public void login(int sessionId, User user, List<Chat> subscribedUserChats, List<Chat> availableChats) {
         server.sendResponse(sessionId, new LoginCmd.Response(user, subscribedUserChats, availableChats));
+    }
+
+    public void joinChat(int sessionId, Chat chat) {
+        server.sendResponse(sessionId, new JoinChatCmd.Response(chat));
     }
 
     public void broadcastMessage(String chatAddress, long chatId, Message message) {

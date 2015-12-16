@@ -8,7 +8,11 @@ public enum Opcode {
 
     LOGIN(0x01),
 
-    MESSAGE_SEND(0x10);
+    MESSAGE_SEND(0x10),
+
+    JOIN_CHAT(0x20),
+    LEAVE_CHAT(0x21);
+
 
     private static final HashMap<Short, String> NAMES = new HashMap<>();
 

@@ -52,7 +52,7 @@ public class Server extends Thread implements ServerCallback {
     }
 
     public void rejectSession(int sessionId, boolean close) {
-        System.out.println("reject session with id = " + sessionId);
+        System.out.println("reject session with id = " + sessionId + ", close = " + close);
         Session session = getSession(sessionId);
         if (close) {
             if (session != null) {

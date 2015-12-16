@@ -1,5 +1,6 @@
 package server;
 
+import commands.JoinChatCmd;
 import commands.LoginCmd;
 import commands.MessageSendCmd;
 import commands.base.BaseRequest;
@@ -12,8 +13,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ServerManager {
-
-    public static final String PUBLIC_ROOM_API = "228.5.6.7";
 
     private final Map<String, User> loginToUser = new HashMap<>();
     private final Map<String, String> loginToPasswords = new HashMap<>();
@@ -46,6 +45,8 @@ public class ServerManager {
             onLogin(sessionId, (LoginCmd.Request) request);
         } else if (request instanceof MessageSendCmd.Request) {
             onMessage(sessionId, (MessageSendCmd.Request) request);
+        } else if (request instanceof JoinChatCmd.Request) {
+            onJoinChat(sessionId, (JoinChatCmd.Request) request);
         } else {
             System.out.println("opcode unknown request = " + request.getOpcode());
         }
@@ -79,7 +80,7 @@ public class ServerManager {
 
     private void sendLoginAccepted(int sessionId, User user) {
         List<Chat> subscribedChats = server.controller.getUserSubscribedChats(user);
-        List<Chat> availableChats = server.controller.availableChats;
+        List<Chat> availableChats = server.controller.getAvailableChats();
         availableChats.removeAll(subscribedChats);
         server.api.login(sessionId, user, subscribedChats, availableChats);
     }
@@ -90,6 +91,14 @@ public class ServerManager {
         Message message = server.controller.onMessage(request.chatId, sender, request.text);
         // Broadcast all other client
         server.api.broadcastMessage(server.controller.getChatAddress(request.chatId), request.chatId, message);
+    }
+
+    private void onJoinChat(int sessionId, JoinChatCmd.Request request) {
+        System.out.println("onJoinChat: = " + request);
+        User sender = sessionToUser.get(sessionId);
+        server.controller.addUserToChat(request.chatId, sender);
+        // Send response to user
+        server.api.joinChat(sessionId, server.controller.getChat(request.chatId));
     }
 
     public void onClose(int sessionId) {

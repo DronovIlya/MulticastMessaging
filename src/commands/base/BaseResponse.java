@@ -1,5 +1,6 @@
 package commands.base;
 
+import commands.JoinChatCmd;
 import commands.LoginCmd;
 import commands.MessageSendCmd;
 import proto.Opcode;
@@ -15,6 +16,8 @@ public abstract class BaseResponse extends BaseCommand {
             return LoginCmd.Response.newInstance(result);
         } else if (opcode == Opcode.MESSAGE_SEND.value()) {
             return MessageSendCmd.Response.newInstance(result);
+        } else if (opcode == Opcode.JOIN_CHAT.value()) {
+            return JoinChatCmd.Response.newInstance(result);
         } else {
             throw new RuntimeException("Cannot decode opcode = " + opcode);
         }

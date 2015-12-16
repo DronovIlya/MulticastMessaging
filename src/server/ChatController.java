@@ -14,7 +14,7 @@ public class ChatController {
     private final Server server;
 
     public final Chat publicChat;
-    public final List<Chat> availableChats;
+    public final Map<Long, Chat> availableChats;
 
     public final Map<Long, List<User>> chatsToUsers = new HashMap<>();
     public final Map<Long, List<Chat>> usersToChats = new HashMap<>();
@@ -27,11 +27,11 @@ public class ChatController {
         availableChats = generateStubChats();
     }
 
-    private List<Chat> generateStubChats() {
-        List<Chat> result = new ArrayList<>();
-        result.add(publicChat);
-        result.add(new Chat(1, "228.6.5.7", "Itmo party"));
-        result.add(new Chat(2, "228.1.5.7", "Developer chat"));
+    private Map<Long, Chat> generateStubChats() {
+        Map<Long, Chat> result = new HashMap<>();
+        result.put(0l, publicChat);
+        result.put(1l, new Chat(1, "228.6.5.7", "Itmo party"));
+        result.put(2l, new Chat(2, "228.1.5.7", "Developer chat"));
         return result;
     }
 
@@ -40,6 +40,10 @@ public class ChatController {
      */
     public void onLogin(User user) {
        addUserToChat(publicChat, user);
+    }
+
+    public void addUserToChat(long chatId, User user) {
+        addUserToChat(getChat(chatId), user);
     }
 
     public void addUserToChat(Chat chat, User user) {
@@ -78,11 +82,14 @@ public class ChatController {
     }
 
     public String getChatAddress(long chatId) {
-        for (Chat chat : availableChats) {
-            if (chat.id == chatId) {
-                return chat.address;
-            }
-        }
-        return null;
+        return getChat(chatId).address;
+    }
+
+    public Chat getChat(long chatId) {
+        return availableChats.get(chatId);
+    }
+
+    public List<Chat> getAvailableChats() {
+        return new ArrayList<>(availableChats.values());
     }
 }

@@ -29,7 +29,7 @@ public class UdpHandler {
 
         StringBuilder builder = new StringBuilder();
         for (Chat chat : subscribedChats) {
-            socket.joinGroup(InetAddress.getByName(chat.address));
+            joinChat(chat.address);
             builder.append(chat.title + ", chat address = " + chat.address + "\n");
         }
 
@@ -39,6 +39,10 @@ public class UdpHandler {
 
         readerThread = new ReaderThread();
         readerThread.start();
+    }
+
+    public void joinChat(String address) throws IOException {
+        socket.joinGroup(InetAddress.getByName(address));
     }
 
     public void close() {
