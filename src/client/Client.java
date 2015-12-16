@@ -62,14 +62,18 @@ public class Client extends Thread implements TcpCallback, UdpCallback {
                 String text = args[2];
                 api.messageSend(chatId, text);
                 break;
-            case "joinChat":
+            case "joinGroup":
                 if (args.length != 2) {
-                    System.out.println("Wring joinChat command : joinChat \"chatId\"");
+                    System.out.println("Wring joinGroup command : joinGroup \"chatId\"");
                     return;
                 }
                 chatId = Long.parseLong(args[1]);
                 api.joinChat(chatId);
                 break;
+            case "killClient":
+                killClient();
+                break;
+
         }
     }
 
@@ -77,7 +81,6 @@ public class Client extends Thread implements TcpCallback, UdpCallback {
         System.out.println("Client: break client");
         tcpHandler.close();
         udpHandler.close();
-        connectionState = ConnectionState.DISCONNECTED;
     }
 
     public void onLoggedIn() {
@@ -102,9 +105,9 @@ public class Client extends Thread implements TcpCallback, UdpCallback {
 
     public void joinChat(String address) {
         try {
-            udpHandler.joinChat(address);
+            udpHandler.joinGroup(address);
         } catch (IOException e) {
-            System.out.println("Client: joinChat: error in joining chat = " + address);
+            System.out.println("Client: joinGroup: error in joining chat = " + address);
             e.printStackTrace();
             // Something goes wrong, break client
             killClient();

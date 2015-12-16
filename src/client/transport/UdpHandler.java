@@ -6,6 +6,7 @@ import proto.Packet;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class UdpHandler {
@@ -19,6 +20,8 @@ public class UdpHandler {
     private final MulticastSocket socket;
     private final ReaderThread readerThread;
 
+    private final List<String> joinedGroup = new ArrayList<>();
+
     private boolean isClosed;
 
     public UdpHandler(List<Chat> subscribedChats, int port, UdpCallback callback) throws IOException {
@@ -29,7 +32,7 @@ public class UdpHandler {
 
         StringBuilder builder = new StringBuilder();
         for (Chat chat : subscribedChats) {
-            joinChat(chat.address);
+            joinGroup(chat.address);
             builder.append(chat.title + ", chat address = " + chat.address + "\n");
         }
 
@@ -41,14 +44,26 @@ public class UdpHandler {
         readerThread.start();
     }
 
-    public void joinChat(String address) throws IOException {
+    public void joinGroup(String address) throws IOException {
+        joinedGroup.add(address);
         socket.joinGroup(InetAddress.getByName(address));
+    }
+
+    public void leaveGroup(String address) throws IOException {
+        joinedGroup.remove(address);
+        socket.leaveGroup(InetAddress.getByName(address));
     }
 
     public void close() {
         if (!isClosed) {
             isClosed = true;
             readerThread.interrupt();
+
+            for (String address : joinedGroup) {
+                try {
+                    leaveGroup(address);
+                } catch (IOException ignored) {}
+            }
 
             if (!socket.isClosed()) {
                 socket.close();
