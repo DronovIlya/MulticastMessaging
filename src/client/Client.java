@@ -2,13 +2,14 @@ package client;
 
 import commands.base.BaseRequest;
 import commands.base.BaseResponse;
-import server.Server;
-import proto.transport.TcpCallback;
-import proto.transport.TcpHandler;
-import proto.transport.UdpCallback;
-import proto.transport.UdpHandler;
+import client.transport.TcpCallback;
+import client.transport.TcpHandler;
+import client.transport.UdpCallback;
+import client.transport.UdpHandler;
+import commands.entity.Chat;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,24 +39,30 @@ public class Client extends Thread implements TcpCallback, UdpCallback {
             String command = scanner.nextLine();
             String[] commandArgs = command.split("\\s+");
             // TODO: Probably it moves to GUI
-            switch (commandArgs[0]) {
-                case "login":
-                    if (commandArgs.length != 3) {
-                        System.out.println("Wrong login command : login login password");
-                        continue;
-                    }
-                    api.login(commandArgs[1], commandArgs[2]);
-                    break;
-                case "messageSend":
-                    if (commandArgs.length != 2) {
-                        System.out.println("Wrong messageSend command : messageSend text");
-                        continue;
-                    }
-                    String text = commandArgs[1];
-                    api.messageSend(0, manager.self, text);
-                    break;
+            parseCommand(commandArgs);
+        }
+    }
 
-            }
+    private void parseCommand(String[] args) {
+        String command = args[0];
+        switch (command) {
+            case "login":
+                if (args.length != 3) {
+                    System.out.println("Wrong login command : login \"login\" \"password\"");
+                    return;
+                }
+                api.login(args[1], args[2]);
+                break;
+            case "messageSend":
+                if (args.length != 3) {
+                    System.out.println("Wrong messageSend command : messageSend \"chatId\" \"text\"");
+                    return;
+                }
+                long chatId = Long.parseLong(args[1]);
+                String text = args[2];
+                api.messageSend(chatId, text);
+                break;
+
         }
     }
 
@@ -68,15 +75,16 @@ public class Client extends Thread implements TcpCallback, UdpCallback {
 
     public void onLoggedIn() {
         connectionState = ConnectionState.LOGGED_IN;
+        System.out.println("connection state = LOGGED_IN");
     }
 
     public void sendRequest(BaseRequest request) {
         tcpHandler.pushRequest(request);
     }
 
-    public void startUdpListener(String publicRoomAddress) {
+    public void startUdpListener(List<Chat> subscribedChats) {
         try {
-            udpHandler = new UdpHandler(publicRoomAddress, Constants.BROADCAST_PORT, this);
+            udpHandler = new UdpHandler(subscribedChats, Constants.BROADCAST_PORT, this);
             System.out.println("start udp listener");
         } catch (IOException e) {
             e.printStackTrace();
@@ -108,9 +116,11 @@ public class Client extends Thread implements TcpCallback, UdpCallback {
     private void checkConnectionState() {
         if (connectionState == ConnectionState.DISCONNECTED) {
             try {
+                System.out.println("connection state = CONNECTING");
                 connectionState = ConnectionState.CONNECTING;
                 tcpHandler = new TcpHandler(Constants.SERVER_IP, Constants.SERVER_TCP_PORT, this);
                 connectionState = ConnectionState.CONNECTED;
+                System.out.println("connection state = CONNECTED");
             } catch (IOException e) {
                 connectionState = ConnectionState.DISCONNECTED;
             }

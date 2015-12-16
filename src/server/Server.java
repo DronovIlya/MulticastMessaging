@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Server extends Thread implements ServerCallback {
 
     private final ServerManager manager;
+    public final ChatController controller;
     private final ServerSocket serverSocket;
     public final ServerApi api;
 
@@ -25,13 +26,14 @@ public class Server extends Thread implements ServerCallback {
 
     public Server() throws IOException {
         manager = new ServerManager(this);
+        controller = new ChatController(this);
         api = new ServerApi(this);
 
         serverSocket = new ServerSocket(Constants.SERVER_TCP_PORT);
         serverSocket.setSoTimeout(0);
         serverSocket.setReuseAddress(true);
 
-        broadcaster = new UdpBroadcaster(ServerManager.PUBLIC_ROOM_API, Constants.BROADCAST_PORT);
+        broadcaster = new UdpBroadcaster(Constants.BROADCAST_PORT);
         broadcaster.start();
     }
 
@@ -57,17 +59,18 @@ public class Server extends Thread implements ServerCallback {
                 session.close();
             }
         }
+        manager.onClose(sessionId);
         availableSessions.remove(sessionId);
     }
 
     public void sendResponse(int sessionId, BaseResponse response) {
-        System.out.println("server, response --> " + sessionId + ", response = " + response);
+        System.out.println("Server: sendResponse: response --> " + sessionId + ", response = " + response);
         getSession(sessionId).sendResponse(response);
     }
 
-    public void sendBroadcast(BaseRequest request) {
-        System.out.println("send broadcast, request = " + request);
-        broadcaster.pushPacket(new Packet(request));
+    public void sendBroadcast(String address, BaseResponse request) {
+        System.out.println("Server: send broadcast: address = " + address + ", request = " + request);
+        broadcaster.pushPacket(address, new Packet(request));
     }
 
     @Override

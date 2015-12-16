@@ -2,9 +2,13 @@ package commands;
 
 import commands.base.BaseRequest;
 import commands.base.BaseResponse;
+import commands.entity.Chat;
 import commands.entity.User;
+import commands.lists.ChatList;
 import proto.Opcode;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class LoginCmd {
@@ -52,18 +56,22 @@ public class LoginCmd {
     public static class Response extends BaseResponse {
 
         public final User user;
-        public final String publicRoomAddress;
+        public final List<Chat> subscribedChat;
+        public final List<Chat> availableChats;
 
-        public Response(User user, String publicRoomAddress) {
+        public Response(User user, List<Chat> subscribedChat, List<Chat> availableChats) {
             this.user = user;
-            this.publicRoomAddress = publicRoomAddress;
+            this.subscribedChat = subscribedChat;
+            this.availableChats = availableChats;
         }
 
         public static Response newInstance(Map<String, Object> data) {
+            System.out.println(data);
             if (data != null) {
                 return new Response(
                         User.newInstance((Map<String, Object>) data.get("user")),
-                        (String)data.get("publicRoomAddress")
+                        ChatList.newInstance((List) data.get("subscribedChat")),
+                        ChatList.newInstance((List) data.get("availableChats"))
                 );
             }
             return null;
@@ -72,15 +80,26 @@ public class LoginCmd {
         @Override
         protected void makeRequestParams() {
             addMap("user", user.makeParams());
-            addStringParam("publicRoomAddress", publicRoomAddress);
-        }
 
+            List<Object> result = new ArrayList<>();
+            for (Chat chat : subscribedChat) {
+                result.add(chat.makeParams());
+            }
+            addList("subscribedChat", result);
+
+            result = new ArrayList<>();
+            for (Chat chat : availableChats) {
+                result.add(chat.makeParams());
+            }
+            addList("availableChats", result);
+        }
 
         @Override
         public String toString() {
             return "Response{" +
                     "user=" + user +
-                    ", publicRoomAddress='" + publicRoomAddress + '\'' +
+                    ", subscribedChat=" + subscribedChat +
+                    ", availableChats=" + availableChats +
                     '}';
         }
 

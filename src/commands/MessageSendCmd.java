@@ -11,21 +11,25 @@ public class MessageSendCmd {
 
     public static class Request extends BaseRequest {
 
-        public final Message message;
+        public final long chatId;
+        public final String text;
 
-        public Request(Message message) {
-            this.message = message;
+        public Request(long chatId, String text) {
+            this.chatId = chatId;
+            this.text = text;
         }
 
         @Override
         protected void makeRequestParams() {
-            addMap("message", message.makeParams());
+            addLongParam("chatId", chatId);
+            addStringParam("text", text);
         }
 
         @Override
         public String toString() {
             return "Request{" +
-                    "message=" + message +
+                    "chatId=" + chatId +
+                    ", text='" + text + '\'' +
                     '}';
         }
 
@@ -37,7 +41,8 @@ public class MessageSendCmd {
         public static Request newInstance(Map<String, Object> data) {
             if (data != null) {
                 return new Request(
-                        Message.newInstance((Map<String, Object>) data.get("message"))
+                        (long) data.get("chatId"),
+                        (String) data.get("text")
                 );
             }
             return null;
@@ -46,21 +51,25 @@ public class MessageSendCmd {
 
     public static class Response extends BaseResponse {
 
+        public final long chatId;
         public final Message message;
 
-        public Response(Message message) {
+        public Response(long chatId, Message message) {
+            this.chatId = chatId;
             this.message = message;
         }
 
         @Override
         protected void makeRequestParams() {
+            addLongParam("chatId", chatId);
             addMap("message", message.makeParams());
         }
 
         @Override
         public String toString() {
-            return "Request{" +
-                    "message=" + message +
+            return "Response{" +
+                    "chatId=" + chatId +
+                    ", message=" + message +
                     '}';
         }
 
@@ -72,6 +81,7 @@ public class MessageSendCmd {
         public static Response newInstance(Map<String, Object> data) {
             if (data != null) {
                 return new Response(
+                        (long) data.get("chatId"),
                         Message.newInstance((Map<String, Object>) data.get("message"))
                 );
             }

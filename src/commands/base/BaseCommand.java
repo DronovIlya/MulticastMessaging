@@ -5,6 +5,7 @@ import utils.MsgPackUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public abstract class BaseCommand {
@@ -40,6 +41,10 @@ public abstract class BaseCommand {
 
     protected void addMap(String name, Map map) {
         mParams.put(name, map);
+    }
+
+    protected void addList(String name, List list) {
+        mParams.put(name, list);
     }
 
     protected static Map<String, Object> deserialize(byte[] bytes) {

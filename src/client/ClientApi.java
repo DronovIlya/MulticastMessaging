@@ -17,7 +17,7 @@ public class ClientApi {
         client.sendRequest(new LoginCmd.Request(login, password));
     }
 
-    public void messageSend(long chatId, User sender, String text) {
-        client.sendRequest(new MessageSendCmd.Request(new Message(chatId, sender, text)));
+    public void messageSend(long chatId, String text) {
+        client.sendRequest(new MessageSendCmd.Request(chatId, text));
     }
 }

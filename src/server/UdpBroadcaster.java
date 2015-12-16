@@ -10,22 +10,20 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class UdpBroadcaster extends Thread {
 
-    private final ConcurrentLinkedDeque<Packet> packets = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<BroadcastPacket> packets = new ConcurrentLinkedDeque<>();
 
-    private final String address;
     private final int port;
 
     private DatagramSocket socket;
 
-    public UdpBroadcaster(String address, int port) throws SocketException {
-        this.address = address;
+    public UdpBroadcaster(int port) throws SocketException {
         this.port = port;
 
         socket = new DatagramSocket();
     }
 
-    public void pushPacket(Packet packet) {
-        packets.add(packet);
+    public void pushPacket(String address, Packet packet) {
+        packets.add(new BroadcastPacket(address, packet));
         synchronized (packets) {
             packets.notifyAll();
         }
@@ -36,7 +34,7 @@ public class UdpBroadcaster extends Thread {
 
         while (true) {
 
-            Packet packet;
+            BroadcastPacket packet;
             synchronized (packets) {
                 packet = packets.poll();
                 if (packet == null) {
@@ -51,15 +49,26 @@ public class UdpBroadcaster extends Thread {
 
 
             try {
-                byte[] buffer = packet.toByteArray();
+                byte[] buffer = packet.packet.toByteArray();
                 DatagramPacket datagramPacket = new DatagramPacket(buffer, 0, buffer.length,
-                        InetAddress.getByName(address), port);
+                        InetAddress.getByName(packet.address), port);
 
                 socket.send(datagramPacket);
             } catch (Exception e) {
                 e.printStackTrace();
                 // TODO: handle errors
             }
+        }
+    }
+
+    private class BroadcastPacket {
+
+        public final String address;
+        public final Packet packet;
+
+        private BroadcastPacket(String address, Packet packet) {
+            this.address = address;
+            this.packet = packet;
         }
     }
 }

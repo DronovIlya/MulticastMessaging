@@ -1,4 +1,4 @@
-package proto.transport;
+package client.transport;
 
 import commands.base.BaseRequest;
 import commands.base.BaseResponse;

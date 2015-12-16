@@ -1,41 +1,43 @@
 package commands.entity;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 public class Chat {
 
-    public final int id;
+    public final long id;
+    public final String address;
     public final String title;
-    public final List<User> participants;
 
-    public Chat(int id, String title, List<User> participants) {
+    public Chat(long id, String address, String title) {
         this.id = id;
         this.title = title;
-        this.participants = participants;
+        this.address = address;
     }
 
     @Override
     public String toString() {
         return "Chat{" +
                 "id=" + id +
+                ", address='" + address + '\'' +
                 ", title='" + title + '\'' +
-                ", participants=" + participants +
                 '}';
+    }
+
+    public Map<String, Object> makeParams() {
+        Map<String, Object> result = new HashMap<>();
+        result.put("id", id);
+        result.put("address", address);
+        result.put("title", title);
+        return result;
     }
 
     public static Chat newInstance(Map<String, Object> data) {
         if (data != null) {
-            int id = (int) data.get("id");
+            long id = (long) data.get("id");
             String title = (String) data.get("title");
-
-            List<User> participants = new ArrayList<>();
-            List list = (List) data.get("participants");
-            for (Object obj : list) {
-                participants.add(User.newInstance((Map<String, Object>) obj));
-            }
-            return new Chat(id, title, participants);
+            String address = (String)data.get("address");
+            return new Chat(id, address, title);
         }
         return null;
     }

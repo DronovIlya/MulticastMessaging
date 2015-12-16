@@ -1,16 +1,19 @@
-package proto.transport;
+package client.transport;
 
 import commands.base.BaseResponse;
+import commands.entity.Chat;
 import proto.Packet;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.List;
 
 public class UdpHandler {
 
-    private final static int PACKET_SIZE = 1024;
+    private final static boolean LOG_OPERATION = false;
 
-    private final String baseAddress;
+    private final static int MAX_PACKET_SIZE = 1024;
+
     private final int port;
     private final UdpCallback callback;
     private final MulticastSocket socket;
@@ -18,13 +21,21 @@ public class UdpHandler {
 
     private boolean isClosed;
 
-    public UdpHandler(String baseAddress, int port, UdpCallback callback) throws IOException {
-        this.baseAddress = baseAddress;
+    public UdpHandler(List<Chat> subscribedChats, int port, UdpCallback callback) throws IOException {
         this.port = port;
         this.callback = callback;
 
         socket = new MulticastSocket(port);
-        socket.joinGroup(InetAddress.getByName(baseAddress));
+
+        StringBuilder builder = new StringBuilder();
+        for (Chat chat : subscribedChats) {
+            socket.joinGroup(InetAddress.getByName(chat.address));
+            builder.append(chat.title + ", chat address = " + chat.address + "\n");
+        }
+
+        if (LOG_OPERATION) {
+            System.out.println("UdpHandler: start listening : " + builder.toString());
+        }
 
         readerThread = new ReaderThread();
         readerThread.start();
@@ -52,11 +63,13 @@ public class UdpHandler {
         public void run() {
             while (!isClosed) {
                 // TODO: don't use specific packet size. It's bad, man :(
-                byte[] buffer = new byte[1024];
+                byte[] buffer = new byte[MAX_PACKET_SIZE];
                 try {
                     DatagramPacket datagram = new DatagramPacket(buffer, buffer.length);
                     socket.receive(datagram);
-                    System.out.println("UDP: received packet, length = " + buffer.length);
+                    if (LOG_OPERATION) {
+                        System.out.println("UDP: received packet, length = " + buffer.length);
+                    }
                     Packet packet = new Packet(datagram.getData());
 
                     byte[] payload = new byte[packet.getPayloadLength()];
