@@ -15,7 +15,6 @@ public class UdpHandler {
 
     private final static int MAX_PACKET_SIZE = 1024;
 
-    private final int port;
     private final UdpCallback callback;
     private final MulticastSocket socket;
     private final ReaderThread readerThread;
@@ -25,7 +24,6 @@ public class UdpHandler {
     private boolean isClosed;
 
     public UdpHandler(List<Chat> subscribedChats, int port, UdpCallback callback) throws IOException {
-        this.port = port;
         this.callback = callback;
 
         socket = new MulticastSocket(port);
@@ -92,6 +90,7 @@ public class UdpHandler {
                     Packet packet = new Packet(datagram.getData());
 
                     byte[] payload = new byte[packet.getPayloadLength()];
+                    // Reduce first HEADER_SIZE bytes of packet header.
                     System.arraycopy(buffer, Packet.HEADER_SIZE, payload, 0, payload.length);
 
                     if (datagram.getData().length > 0) {
