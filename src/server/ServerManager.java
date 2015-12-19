@@ -9,7 +9,10 @@ import commands.entity.Message;
 import commands.entity.User;
 import utils.Texts;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ServerManager {
@@ -18,6 +21,8 @@ public class ServerManager {
     private final Map<String, String> loginToPasswords = new HashMap<>();
 
     private final Map<Integer, User> sessionToUser = new HashMap<>();
+
+    private final Map<Chat, List<String>> states = new HashMap<>();
 
     private final Server server;
 
@@ -91,6 +96,15 @@ public class ServerManager {
         Message message = server.controller.onMessage(request.chatId, sender, request.text);
         // Broadcast all other client
         server.api.broadcastMessage(server.controller.getChatAddress(request.chatId), request.chatId, message);
+        if (states.containsKey(server.controller.getChat(request.chatId))) {
+            List<String> tmp = states.get(server.controller.getChat(request.chatId));
+            tmp.add(request.text + " " + sender.name);
+            states.put(server.controller.getChat(request.chatId), tmp);
+        } else {
+            List<String> tmp = new ArrayList<>();
+            tmp.add(request.text + " " + sender.name);
+            states.put(server.controller.getChat(request.chatId), tmp);
+        }
     }
 
     private void onJoinChat(int sessionId, JoinChatCmd.Request request) {
@@ -99,6 +113,18 @@ public class ServerManager {
         server.controller.addUserToChat(request.chatId, sender);
         // Send response to user
         server.api.joinChat(sessionId, server.controller.getChat(request.chatId));
+        // add lines to response
+        if (states.containsKey(server.controller.getChat(request.chatId))) {
+            List<String> tmp = states.get(server.controller.getChat(request.chatId));
+            StringBuilder builder = new StringBuilder();
+            for (String s : tmp) {
+                builder.append(s);
+                builder.append(',');
+            }
+            builder.delete(builder.length() - 1, builder.length());
+            Message message = server.controller.onMessage(request.chatId, new User(-1, "server"), builder.toString());
+            server.api.broadcastMessage(server.controller.getChatAddress(request.chatId), request.chatId, message);
+        }
     }
 
     public void onClose(int sessionId) {
