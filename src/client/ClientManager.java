@@ -3,6 +3,7 @@ package client;
 import client.ui.ChatView;
 import client.ui.GroupsView;
 import commands.JoinChatCmd;
+import commands.LeaveChatCmd;
 import commands.LoginCmd;
 import commands.MessageSendCmd;
 import commands.base.BaseResponse;
@@ -29,6 +30,8 @@ public class ClientManager {
             onMessage(((MessageSendCmd.Response) response));
         } else if (response instanceof JoinChatCmd.Response) {
             onJoinChat((JoinChatCmd.Response) response);
+        } else if (response instanceof LeaveChatCmd.Response) {
+            onLeaveChat((LeaveChatCmd.Response) response);
         }
     }
 
@@ -54,5 +57,11 @@ public class ClientManager {
         subscribedChats.add(response.chat);
         client.joinChat(response.chat.address);
         ChatView.runUI(client, response.chat);
+    }
+
+    private void onLeaveChat(LeaveChatCmd.Response response) {
+        System.out.println("onLeaveChat: stop listening chat = " + response.chat);
+        subscribedChats.remove(response.chat);
+        client.leaveChat(response.chat.address);
     }
 }

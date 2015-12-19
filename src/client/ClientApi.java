@@ -1,6 +1,7 @@
 package client;
 
 import commands.JoinChatCmd;
+import commands.LeaveChatCmd;
 import commands.LoginCmd;
 import commands.MessageSendCmd;
 import commands.entity.Message;
@@ -26,4 +27,7 @@ public class ClientApi {
         client.sendRequest(new JoinChatCmd.Request(chatId));
     }
 
+    public void leaveChat(long chatId) {
+        client.sendRequest(new LeaveChatCmd.Request(chatId));
+    }
 }

@@ -115,6 +115,17 @@ public class Client extends Thread implements TcpCallback, UdpCallback {
         }
     }
 
+    public void leaveChat(String address) {
+        try {
+            udpHandler.leaveGroup(address);
+        } catch (IOException e) {
+            System.out.println("Client: leaveChat: error in leaving chat = " + address);
+            e.printStackTrace();
+            // Something goes wrong, break client
+            killClient();
+        }
+    }
+
     @Override
     public <T extends BaseResponse> void onTcpReceived(T result) {
         manager.handleResponse(result);
