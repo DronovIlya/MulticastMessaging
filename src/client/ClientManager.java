@@ -47,9 +47,13 @@ public class ClientManager {
 
 
     private void onMessage(MessageSendCmd.Response response) {
-        System.out.println("onMessage: " + response.message);
-        ChatView curUI = ChatView.clientUIMap.get(response.chatId);
-        curUI.appendMessage(response.message.sender.name, response.message.text);
+        if (response.message.sender.id == self.id) {
+            System.out.println("onMessage: ignoring self message = " + response.message);
+        } else {
+            System.out.println("onMessage: " + response.message);
+            ChatView curUI = ChatView.clientUIMap.get(response.chatId);
+            curUI.appendMessage(response.message.sender.name, response.message.text);
+        }
     }
 
     private void onJoinChat(JoinChatCmd.Response response) {

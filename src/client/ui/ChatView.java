@@ -41,6 +41,7 @@ public class ChatView extends JFrame {
         textField = new JTextField(20);
         textField.addActionListener(e -> {
             client.api.messageSend(chat.id, textField.getText());
+            appendMessage(client.manager.self.name, textField.getText());
             textField.setText("");
         });
         textArea = new JTextArea();
