@@ -1,5 +1,6 @@
 package client;
 
+import client.ui.LoginView;
 import commands.base.BaseRequest;
 import commands.base.BaseResponse;
 import client.transport.TcpCallback;
@@ -143,6 +144,7 @@ public class Client extends Thread implements TcpCallback, UdpCallback {
                 tcpHandler = new TcpHandler(Constants.SERVER_IP, Constants.SERVER_TCP_PORT, this);
                 connectionState = ConnectionState.CONNECTED;
                 System.out.println("connection state = CONNECTED");
+                LoginView.runUI(this);
             } catch (IOException e) {
                 connectionState = ConnectionState.DISCONNECTED;
             }
